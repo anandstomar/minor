@@ -1,0 +1,67 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract DiabetesStorage {
+    struct DiabetesData {
+        uint256 pregnacies;
+        uint256 glucose;
+        uint256 bloodPressure;
+        uint256 skinThickness;
+        uint256 insulin;
+        uint256 bmi;
+        uint256 age;
+        uint256 diabetesPedigreeFunction; // Store this as an integer with scaling
+    }
+
+    DiabetesData[] public diabetesRecords;
+
+    event DataStored(uint256 indexed id, DiabetesData data);
+
+    // Store data with diabetesPedigreeFunction scaled by 10^18
+    function storeDiabetesData(
+        uint256 _pregnacies,
+        uint256 _glucose,
+        uint256 _bloodPressure,
+        uint256 _skinThickness,
+        uint256 _insulin,
+        uint256 _bmi,
+        uint256 _age,
+        uint256 _diabetesPedigreeFunction // Pass the scaled value
+    ) public {
+        // The scaling should happen on the client-side before calling this function
+        DiabetesData memory newData = DiabetesData(
+            _pregnacies,
+            _glucose,
+            _bloodPressure,
+            _skinThickness,
+            _insulin,
+            _bmi,
+            _age,
+            _diabetesPedigreeFunction
+        );
+
+        diabetesRecords.push(newData);
+
+        emit DataStored(diabetesRecords.length - 1, newData);
+    }
+
+    function getDiabetesData(uint256 index) public view returns (DiabetesData memory) {
+        require(index < diabetesRecords.length, "Invalid index");
+        return diabetesRecords[index];
+    }
+
+    function getRecord(uint256 index) public view returns (DiabetesData memory) {
+        return diabetesRecords[index];
+    }
+
+    function getRecordCount() public view returns (uint256) {
+        return diabetesRecords.length;
+    }
+
+    // A function to retrieve the diabetesPedigreeFunction in its original decimal form
+    function getDiabetesPedigreeFunction(uint256 index) public view returns (uint256) {
+        require(index < diabetesRecords.length, "Invalid index");
+        uint256 scaledValue = diabetesRecords[index].diabetesPedigreeFunction;
+        return scaledValue / 10**18; // Divide by scaling factor to get the original value
+    }
+}
